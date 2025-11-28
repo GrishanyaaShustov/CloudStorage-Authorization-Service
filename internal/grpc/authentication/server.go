@@ -36,6 +36,8 @@ func NewServer(log *slog.Logger, service Service) *Server {
 	}
 }
 
+// Register handles user registration and delegates all business logic
+// to the Service implementation.
 func (s *Server) Register(ctx context.Context, request *authorizationservicev1.RegisterRequest) (*authorizationservicev1.RegisterResponse, error) {
 	if request == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is nil")
@@ -66,4 +68,39 @@ func (s *Server) Register(ctx context.Context, request *authorizationservicev1.R
 		return nil, err
 	}
 	return resp, nil
+}
+
+// Login authenticates user by email and password and delegates
+// the actual logic to the Service implementation.
+func (s *Server) Login(ctx context.Context, request *authorizationservicev1.LoginRequest) (*authorizationservicev1.LoginResponse, error) {
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is nil")
+	}
+
+	if request.GetEmail() == "" {
+		return nil, status.Error(codes.InvalidArgument, "email is required")
+	}
+
+	if request.GetPassword() == "" {
+		return nil, status.Error(codes.InvalidArgument, "password is required")
+	}
+
+	s.log.InfoContext(ctx, "Login called",
+		"email", request.GetEmail(),
+		"client_id", request.GetClientId(),
+	)
+	resp, err := s.service.Login(ctx, request)
+
+	if err != nil {
+		// The service is expected to return a gRPC-aware error (status.Error),
+		// but just in case we still log it here.
+		s.log.ErrorContext(ctx, "Login failed failed",
+			"email", request.GetEmail(),
+			"client_id", request.GetClientId(),
+		)
+
+		return nil, err
+	}
+
+	return resp, err
 }
