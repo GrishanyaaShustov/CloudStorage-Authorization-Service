@@ -104,3 +104,31 @@ func (s *Server) Login(ctx context.Context, request *authorizationservicev1.Logi
 
 	return resp, err
 }
+
+// RefreshToken exchanges a refresh token for a new set of tokens.
+// The handler only does basic validation and logging and delegates
+// the actual refresh flow to the Service implementation.
+func (s *Server) RefreshToken(ctx context.Context, request *authorizationservicev1.RefreshTokenRequest) (*authorizationservicev1.RefreshTokenResponse, error) {
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is nil")
+	}
+
+	if request.GetRefreshToken() == "" {
+		return nil, status.Error(codes.InvalidArgument, "refresh token is required")
+	}
+
+	s.log.InfoContext(ctx, "RefreshToken called",
+		"client_id", request.GetClientId(),
+	)
+
+	resp, err := s.service.RefreshToken(ctx, request)
+
+	if err != nil {
+		s.log.ErrorContext(ctx, "RefreshToken failed",
+			"client_id", request.GetClientId(),
+		)
+
+		return nil, err
+	}
+	return resp, nil
+}
