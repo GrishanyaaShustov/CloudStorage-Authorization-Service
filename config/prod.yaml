@@ -1,0 +1,13 @@
+env: "prod"
+
+database:
+  host: "213.171.26.94"
+  port: 5432
+  name: "postgres"
+  ssl-mode: "disable"
+
+grpc:
+  port: 9090
+  timeout: 5s
+  
+
