@@ -132,3 +132,57 @@ func (s *Server) RefreshToken(ctx context.Context, request *authorizationservice
 	}
 	return resp, nil
 }
+
+// Logout performs explicit logout by revoking the refresh token / session.
+// The handler validates input, logs the call and delegates the actual
+// revocation logic to the Service implementation.
+func (s *Server) Logout(ctx context.Context, request *authorizationservicev1.LogoutRequest) (*authorizationservicev1.LogoutResponse, error) {
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is nil")
+	}
+
+	if request.GetRefreshToken() == "" {
+		return nil, status.Error(codes.InvalidArgument, "refresh_token is required")
+	}
+
+	s.log.InfoContext(ctx, "Logout called",
+		"client_id", request.GetClientId(),
+	)
+
+	resp, err := s.service.Logout(ctx, request)
+
+	if err != nil {
+		s.log.ErrorContext(ctx, "Logout failed",
+			"client_id", request.GetClientId(),
+		)
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// VerifyEmail confirms user email using a verification code or flow identifier.
+// The handler only checks basic input and delegates the rest to the Service.
+func (s *Server) VerifyEmail(ctx context.Context, request *authorizationservicev1.VerifyEmailRequest) (*authorizationservicev1.VerifyEmailResponse, error) {
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is nil")
+	}
+
+	if request.GetVerificationCode() == "" {
+		return nil, status.Error(codes.InvalidArgument, "verification_code is required")
+	}
+
+	if request.GetFlowId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "flow_id is required")
+	}
+
+	s.log.InfoContext(ctx, "VerifyEmail called")
+
+	resp, err := s.service.VerifyEmail(ctx, request)
+	if err != nil {
+		s.log.ErrorContext(ctx, "VerifyEmail failed")
+		return nil, err
+	}
+
+	return resp, nil
+}
