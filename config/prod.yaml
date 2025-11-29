@@ -6,6 +6,11 @@ database:
   name: "postgres"
   ssl-mode: "disable"
 
+redis:
+  host: "213.171.26.94 "
+  port: 6379
+  db: 0
+
 grpc:
   port: 9090
   timeout: 5s
