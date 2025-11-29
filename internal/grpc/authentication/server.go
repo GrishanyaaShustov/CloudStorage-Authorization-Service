@@ -44,6 +44,11 @@ func (s *Server) Register(ctx context.Context, request *authorizationservicev1.R
 	}
 
 	// Basic input validation on transport layer.
+
+	if request.GetLogin() == "" {
+		return nil, status.Error(codes.InvalidArgument, "login is required")
+	}
+
 	if request.GetEmail() == "" {
 		return nil, status.Error(codes.InvalidArgument, "email is required")
 	}
