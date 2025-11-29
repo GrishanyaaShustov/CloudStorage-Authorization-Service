@@ -10,7 +10,7 @@ type Config struct {
 	GRPC     GRPCConfig     `mapstructure:"grpc"`
 }
 
-func MustLoad() (*Config, error) {
+func MustLoad() *Config {
 	viper.SetConfigName("prod")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("config")
@@ -39,5 +39,5 @@ func MustLoad() (*Config, error) {
 		panic("DATABASE credentials are missing (DB_USER / DB_PASSWORD not set)")
 	}
 
-	return &cfg, nil
+	return &cfg
 }
