@@ -1,16 +1,15 @@
 package authentication
 
 import (
-	grpcauth "authorization-service/internal/grpc/authentication"
 	"context"
 	"log/slog"
 
 	authorizationservicev1 "github.com/GrishanyaaShustov/CloudStorage-Protos-Service/gen/go/authorization-service"
+
+	grpcauth "authorization-service/internal/grpc/authentication"
 )
 
 // AuthService is a concrete implementation of the authentication Service.
-// It is responsible for orchestrating identity provider (Kratos) and
-// token provider (Hydra).
 type AuthService struct {
 	log *slog.Logger
 }
