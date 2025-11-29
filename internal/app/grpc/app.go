@@ -7,7 +7,10 @@ import (
 	"log/slog"
 	"net"
 
+	pgstorage "authorization-service/internal/storage/postgres"
+
 	authorizationservicev1 "github.com/GrishanyaaShustov/CloudStorage-Protos-Service/gen/go/authorization-service"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -21,14 +24,17 @@ type App struct {
 
 // New creates a new gRPC server app but does NOT start it.
 // The caller is responsible for running and stopping the server.
-func New(log *slog.Logger, gRPCPort int) *App {
+func New(log *slog.Logger, gRPCPort int, pg *pgxpool.Pool) *App {
 	gRPCServer := grpc.NewServer()
 
 	// Enable reflection for grpcurl / Postman
 	reflection.Register(gRPCServer)
 
+	// Wire repository
+	userRepo := pgstorage.NewUserRepository(log, pg)
+
 	// Wire authentication service: business layer + transport layer.
-	authenticationService := serviceauthentication.NewAuthService(log)
+	authenticationService := serviceauthentication.NewAuthService(log, userRepo)
 	authenticationServer := grpcauthentication.NewServer(log, authenticationService)
 
 	// Register gRPC handler for AuthenticationService.

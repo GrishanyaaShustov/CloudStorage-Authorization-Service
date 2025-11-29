@@ -1,6 +1,8 @@
 package app
 
 import (
+	pgstorage "authorization-service/internal/storage/postgres"
+	"context"
 	"log/slog"
 
 	grpcapp "authorization-service/internal/app/grpc"
@@ -24,7 +26,10 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// Here we assume cfg.GRPC has Port field of type int.
 	grpcPort := cfg.GRPC.Port
 
-	grpcApp := grpcapp.New(log, grpcPort)
+	ctx := context.Background()
+	pg := pgstorage.MustNew(ctx, log, cfg.Database)
+
+	grpcApp := grpcapp.New(log, grpcPort, pg)
 
 	return &App{
 		GRPC: grpcApp,
