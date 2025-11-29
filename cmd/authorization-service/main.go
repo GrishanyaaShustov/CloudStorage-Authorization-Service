@@ -1,37 +1,21 @@
 package main
 
 import (
+	"authorization-service/internal/app"
 	"authorization-service/internal/config"
-	"authorization-service/internal/lib/logger/handlers/slogpretty"
-	"log/slog"
-	"os"
 )
 
 func main() {
-	cfg, _ := config.MustLoad()
-	log := setupLogger(cfg.Env)
-	log.Info("starting application", slog.Any("config", cfg))
-}
+	// 1. Init cfg
+	cfg := config.MustLoad()
 
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
+	// 2. Init logger
+	logger := setupLogger(cfg.Env)
 
-	switch env {
-	case "prod":
-		log = setupPrettySlog()
-	}
+	// 3. Build application: wire config, logger, gRPC app, services, etc.
+	application := app.New(logger, cfg)
 
-	return log
-}
+	// 4. Run gRPC server (panic if cant start).
+	application.GRPC.MustRun()
 
-func setupPrettySlog() *slog.Logger {
-	opts := slogpretty.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }
